@@ -333,6 +333,7 @@
   /* --------------------------------------------- running a cell
      In [ ]: → In [*]: and the code types → In [n]: → exec time → output */
   var execCount = 0;
+  var OUT_SPEED = 1.2; // >1 plays every cell's output faster than its timeline is written
   var cells = gsap.utils.toArray('.cell');
 
   function buildCells() {
@@ -364,22 +365,22 @@
             gsap.fromTo(exec, { autoAlpha: 0, x: 6 }, { autoAlpha: 1, x: 0, duration: 0.5 });
           }
           busy(false);
-          if (cell._out) cell._out.play();
+          if (cell._out) cell._out.timeScale(OUT_SPEED).play();
         }
       });
-      // typing: one character every 28ms, no easing, like a fast typist, with a caret riding along
+      // typing: one character every 20ms, no easing, like a fast typist, with a caret riding along
       if (codeChars) {
         var caret = document.createElement('span');
         caret.className = 'caret';
         caret.setAttribute('aria-hidden', 'true');
         code.appendChild(caret);
         var blink = gsap.to(caret, { opacity: 0, duration: 0.45, ease: 'steps(1)', repeat: -1, yoyo: true, paused: true });
-        tl.to(codeChars, { autoAlpha: 1, duration: 0.01, stagger: 0.028, ease: 'none' })
+        tl.to(codeChars, { autoAlpha: 1, duration: 0.01, stagger: 0.02, ease: 'none' })
           .add(function () { blink.play(); })
-          .to({}, { duration: 0.25 }) // the kernel "thinks"
+          .to({}, { duration: 0.18 }) // the kernel "thinks"
           .add(function () { blink.kill(); caret.remove(); });
       } else {
-        tl.to({}, { duration: 0.25 });
+        tl.to({}, { duration: 0.18 });
       }
     };
     // keyboard users can tab into a cell before scrolling to it: run it then
@@ -391,7 +392,7 @@
   function start() {
     // Cells run when they come into view; created top-to-bottom so refresh order matches the page
     cells.forEach(function (cell) {
-      ScrollTrigger.create({ trigger: cell, start: 'top 72%', once: true, onEnter: cell._run });
+      ScrollTrigger.create({ trigger: cell, start: 'top 80%', once: true, onEnter: cell._run });
       ScrollTrigger.create({ trigger: cell, start: 'top 50%', end: 'bottom 50%', toggleClass: { targets: cell, className: 'is-active' } });
     });
     setupToolkit();
@@ -460,7 +461,7 @@
     caret.className = 'caret';
     caret.setAttribute('aria-hidden', 'true');
     tl.add(function () { code.appendChild(caret); })
-      .to(chars, { autoAlpha: 1, duration: 0.01, stagger: 0.022, ease: 'none' })
+      .to(chars, { autoAlpha: 1, duration: 0.01, stagger: 0.016, ease: 'none' })
       .add(function () { caret.remove(); }, '+=0.15');
   }
 
@@ -469,7 +470,7 @@
       var tl = gsap.timeline({ paused: true });
       var code = group.querySelector('[data-import]');
       if (code) typeLine(tl, code);
-      var at = '-=0.05';
+      var at = 0.3; // tiles open while the import line is still typing
 
       var tiles = group.querySelectorAll('.tile');
       if (tiles.length) {
@@ -510,8 +511,8 @@
       }
 
       ScrollTrigger.create({
-        trigger: group, start: 'top 82%', once: true,
-        onEnter: function () { busy(true); tl.eventCallback('onComplete', function () { busy(false); }); tl.play(); }
+        trigger: group, start: 'top 90%', once: true,
+        onEnter: function () { busy(true); tl.eventCallback('onComplete', function () { busy(false); }); tl.timeScale(1.15).play(); }
       });
     });
   }
