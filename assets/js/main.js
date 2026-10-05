@@ -552,7 +552,7 @@
           end: function () { return '+=' + Math.round(window.innerHeight * 1.1 * steps); },
           pin: true,
           anticipatePin: 1,
-          scrub: 0.8,
+          scrub: 0.3, // short catch-up so the folders keep pace with a finger
           invalidateOnRefresh: true,
           onUpdate: function (self) { setActive(Math.round(self.progress * steps)); }
           // No ScrollTrigger snap: it fights Lenis. The timeline has rest

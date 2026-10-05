@@ -882,6 +882,12 @@ mark.hl::before {
   width: 100%;
 }
 .is-stacked .file { position: absolute; inset: 0; will-change: transform; } /* scrubbed every frame: keep the shadows off the paint path */
+/* the parts that move inside a folder get their own layers too, or every frame
+   repaints the whole folder (shadow, ruled paper, screenshot) underneath them */
+.is-stacked .file-shot,
+.is-stacked .file-copy > *,
+.is-stacked .file-sheet--nan > * { will-change: transform, opacity; }
+.is-stacked .file-shade { will-change: opacity; }
 .is-stacked .file-tab { margin-left: calc(var(--i) * var(--tab-step)); }
 .is-stacked .file-body { overflow: hidden; }
 .is-stacked .file-sheet { min-height: 0; }
