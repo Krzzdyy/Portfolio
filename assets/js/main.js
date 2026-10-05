@@ -13,6 +13,7 @@
   var root = document.documentElement;
   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
+  var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   var lenis = null;
   var BAR = 52;
 
@@ -142,6 +143,8 @@
   }
 
   gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, DrawSVGPlugin, CustomEase, ScrollToPlugin);
+  // phones: the address bar showing/hiding shouldn't recalculate every trigger mid-scroll
+  ScrollTrigger.config({ ignoreMobileResize: true });
   // A24's in-out curve for anything that wipes or masks; expo.out for things that land
   CustomEase.create('ink', '0.77,0,0.175,1');
   gsap.defaults({ duration: 0.8, ease: 'expo.out' });
@@ -288,7 +291,8 @@
       drawNote(tl, cell.querySelector('.note--chart'), 2.7);
       // one ambient loop: the unfinished year breathes
       tl.add(function () {
-        gsap.to(cell.querySelector('.is-now b'), { scale: 1.18, duration: 0.9, ease: 'sine.inOut', repeat: -1, yoyo: true });
+        var pulse = gsap.to(cell.querySelector('.is-now b'), { scale: 1.18, duration: 0.9, ease: 'sine.inOut', repeat: -1, yoyo: true });
+        ScrollTrigger.create({ trigger: cell, start: 'top bottom', end: 'bottom top', onToggle: function (self) { pulse.paused(!self.isActive); } });
       });
       return tl;
     },
@@ -547,6 +551,7 @@
           start: 'top top',
           end: function () { return '+=' + Math.round(window.innerHeight * 1.1 * steps); },
           pin: true,
+          anticipatePin: 1,
           scrub: 0.8,
           invalidateOnRefresh: true,
           onUpdate: function (self) { setActive(Math.round(self.progress * steps)); }
@@ -593,11 +598,11 @@
 
   /* ================================================= small interactions
      All pointer-only, and all quiet: each one belongs to something on the page. */
-  var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  // Graph paper drifts up at a fifth of the scroll speed, wrapping every major square
+  // Graph paper drifts up at a fifth of the scroll speed, wrapping every major square.
+  // Desktop only: on phones moving a full-screen layer every scroll frame costs more than it shows.
   var paper = document.querySelector('.paper');
-  if (paper) {
+  if (paper && finePointer) {
     var setPaper = gsap.quickSetter(paper, 'y', 'px');
     ScrollTrigger.create({ start: 0, end: 'max', onUpdate: function (self) { setPaper(-((self.scroll() * 0.2) % 120)); } });
   }

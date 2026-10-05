@@ -440,7 +440,7 @@ mark.hl::before {
   text-transform: uppercase;
 }
 .hero-name { overflow-x: clip; } /* the lines slide apart on scroll-out; keep that inside the screen */
-.hero-line { display: block; overflow: clip; padding-block: 0.08em; margin-block: -0.08em; white-space: nowrap; }
+.hero-line { display: block; overflow: clip; padding-block: 0.08em; margin-block: -0.08em; white-space: nowrap; will-change: transform; } /* scrubbed on scroll */
 .hero-line--b { padding-left: 0.42em; color: var(--accent); }
 /* never let the name fill a short screen (landscape phones, laptops) */
 .hero-name { font-size: max(2.6rem, min(15.5vw, 27vh, 13.5rem)); }
@@ -461,7 +461,7 @@ mark.hl::before {
 }
 
 /* Fig. 1 — the photo as a printed figure with crop marks */
-.fig { position: relative; width: min(100%, 400px); perspective: 900px; }
+.fig { position: relative; width: min(100%, 400px); perspective: 900px; will-change: transform; } /* scrubbed on scroll */
 .fig-frame { transform-style: preserve-3d; }
 .fig-frame { position: relative; padding: 10px; }
 .fig-frame img {
@@ -591,8 +591,8 @@ mark.hl::before {
     linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 12px 12px,
     rgba(251, 250, 246, 0.85);
   transition: border-color 0.35s var(--ease), box-shadow 0.45s var(--ease), background-color 0.35s ease;
-  will-change: transform;
 }
+@media (hover: hover) and (pointer: fine) { .tile { will-change: transform; } } /* only the cursor tilt needs its own layer */
 .tile:hover {
   border-color: var(--ink);
   box-shadow: 0 18px 34px -22px rgba(21, 23, 28, 0.55);
@@ -881,7 +881,7 @@ mark.hl::before {
   min-height: 0;
   width: 100%;
 }
-.is-stacked .file { position: absolute; inset: 0; }
+.is-stacked .file { position: absolute; inset: 0; will-change: transform; } /* scrubbed every frame: keep the shadows off the paint path */
 .is-stacked .file-tab { margin-left: calc(var(--i) * var(--tab-step)); }
 .is-stacked .file-body { overflow: hidden; }
 .is-stacked .file-sheet { min-height: 0; }
@@ -995,7 +995,7 @@ kbd { padding: 2px 6px; border: 1px solid var(--rule); border-bottom-width: 2px;
    -------------------------------------------------------------------------- */
 /* line masks get a little room so descenders aren't cut off at line-height < 1 */
 .split-line-mask { padding-bottom: 0.14em; margin-bottom: -0.14em; }
-.split-char { display: inline-block; will-change: transform; }
+.split-char { display: inline-block; }
 
 /* --------------------------------------------------------------------------
    Reduced motion — nothing moves, everything is visible
@@ -1003,4 +1003,15 @@ kbd { padding: 2px 6px; border: 1px solid var(--rule); border-bottom-width: 2px;
 @media (prefers-reduced-motion: reduce) {
   .js .boot { display: none; }
   *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
+}
+
+/* --------------------------------------------------------------------------
+   Touch / small screens — lighter compositing
+   A live backdrop blur re-renders under the fixed toolbar on every scrolled
+   frame, and the graph paper doesn't drift on touch (main.js), so neither
+   needs to cost anything there.
+   -------------------------------------------------------------------------- */
+@media (hover: none), (pointer: coarse), (max-width: 899px) {
+  .bar { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(244, 241, 234, 0.97); }
+  .paper { will-change: auto; }
 }
